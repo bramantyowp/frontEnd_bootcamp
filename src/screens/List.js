@@ -5,20 +5,18 @@
  * @format
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import {
     FlatList,
     SafeAreaView,
     useColorScheme,
 } from 'react-native';
 
-import axios from 'axios';
 import CarList from '../components/CarList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectUser } from '../redux/reducers/user';
 import { getCars, selectCars } from '../redux/reducers/cars';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const COLORS = {
     primary: '#A43333',
@@ -30,21 +28,21 @@ const COLORS = {
 function List() {
     const isDarkMode = useColorScheme() === 'dark';
     const dispatch = useDispatch()
-    const user = useSelector(selectUser);
     const cars = useSelector(selectCars);
+    const navigation = useNavigation();
 
     const fetchCars = async () => {
         const page = 1;
-        if(!cars.data.length || page > cars.data?.page && cars.status === 'idle'){
-          dispatch(getCars(page))
+        if (!cars.data.length || page > cars.data?.page && cars.status === 'idle') {
+            dispatch(getCars(page))
         }
-      }
+    }
 
-      useFocusEffect(
+    useFocusEffect(
         useCallback(() => {
-          fetchCars();
+            fetchCars();
         }, [])
-      );
+    );
 
     const backgroundStyle = {
         // overflow: 'visible',
@@ -65,9 +63,10 @@ function List() {
                         key={item.id}
                         image={{ uri: item.img }}
                         carName={item.name}
-                        passengers={5}
-                        baggage={4}
+                        passengers={item.seat}
+                        baggage={item.baggage}
                         price={item.price}
+                        onPress={() => navigation.navigate('Detail', { id: item.id })}
                         onEndReached={fetchCars}
                         onEndReachedThreshold={0.8}
                     />

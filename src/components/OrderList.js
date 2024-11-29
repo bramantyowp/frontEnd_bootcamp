@@ -14,6 +14,7 @@ const STATUS_COLOR = {
 
 export default function OrderList({
   onPress,
+  onCountdownEnd,
   date,
   carName,
   overdue,
@@ -24,7 +25,9 @@ export default function OrderList({
 {
   const isDarkMode = useColorScheme() === 'dark';
   const formatIDR = useCallback((price) => formatCurrency.format(price), []);
-  console.log(new Date(overdue))
+  // const handleFinish = (id) => {
+  //   dispatch(cancelOrder(id))
+  // }
   return (
     <Button style={{
         backgroundColor: isDarkMode ? '#121212' : '#fff',
@@ -33,7 +36,7 @@ export default function OrderList({
         }}
         onPress={onPress}
     >
-      <Row alignItems={'center'} gap={20}>
+      <Row alignItems={'center'} justifyContent={'space-between'} gap={20} style={styles.row}>
         <Col>
           <Text style={{
               color: isDarkMode ? '#fff' : '#000',
@@ -41,14 +44,19 @@ export default function OrderList({
             }}>{carName}</Text>
         </Col>
         <Col>
-          {status === 'pending' ? <Countdown until={overdue} /> : <Text style={{color: STATUS_COLOR[status]}}>{status}</Text>}
+          {status === 'pending' ? 
+            <Countdown until={overdue} onFinish={onCountdownEnd}/>
+          :
+            <Text style={{color: STATUS_COLOR[status]}}>{status}</Text>
+          }
         </Col>
       </Row>
-      <Row gap={5}>
+      <Row gap={5} alignItems={'center'} justifyContent={'space-between'}>
         <Col>
           <Text style={{
-            color: isDarkMode ? '#fff' : '#000',
-            ...styles.carName,
+            color: isDarkMode ? '#fff' : '#8b8c8b',
+            
+            ...styles.dateText,
           }}>{date}</Text>
         </Col>
         <Col>
@@ -66,10 +74,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.2)',
     borderWidth: 0.5,
     borderRadius: 2,
-    padding: 20,
+    padding: 10,
     marginVertical: 10,
     marginHorizontal: 12,
     alignItems: 'flex-start',
+  },
+  row:{
+    marginBottom: 5,
   },
   img: {
     width: 80,
@@ -82,8 +93,8 @@ const styles = StyleSheet.create({
   capacityText: {
     color: '#8A8A8A',
   },
-  price: {
-    color: '#5CB85F',
+  dateText:{
+    fontSize: 11,
   },
   textIcon: {
     flexDirection: 'row',

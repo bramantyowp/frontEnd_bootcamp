@@ -11,31 +11,37 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { selectOrder, setStateByName, putOrderSlip } from '../../../redux/reducers/order';
-import { selectCarDetails } from '../../../redux/reducers/cars';
-import { selectUser } from '../../../redux/reducers/user';
+import { selectOrder, setStateByName, putOrderSlip } from '@reducers/order';
+import { selectCarDetail } from '@reducers/cars';
+import { selectUser } from '@reducers/user';
 
-import CarList from '../../../components/CarList';
-import Button from '../../../components/Button';
+import CarList from '@components/CarList';
+import Button from '@components/Button';
 import Icon from 'react-native-vector-icons/Feather';
-import CountDown from 'react-native-countdown-component-maintained';
-import formatCurrency from '../../../utils/formatCurrency';
-import ModalPopup from '../../../components/Modal/Modal';
+import Countdown from '@components/Countdown';
+import { formatCurrency } from '@utils/formatCurrency';
+import ModalDragable from '@components/Modal/ModalDragable';
+import moment from 'moment'
 
-function getDate24() {
-    const date24 = new Date(); // your date object
-    date24.setHours(date24.getHours() + 24);
-    return date24.toString();
-}
+const paymentMethods = [
+    { bankName: 'BCA', account: 12345678, name: 'a. n Super Travel' },
+    { bankName: 'MANDIRI', account: 12345678, name: 'a. n Super Travel' },
+    { bankName: 'BNI', account: 12345678, name: 'a. n Super Travel' },
+  ];
 
 export default function Step2() {
     const [promoText, setPromoText] = useState(null);
-    const { data, selectedBank, errorMessage, isModalVisible, status } = useSelector(selectOrder);
+    const { data, errorMessage, status, isModalVisible } = useSelector(selectOrder);
+    const carData = useSelector(selectCarDetail)
     const user = useSelector(selectUser);
 
     const [image, setImage] = useState(null);
 
     const dispatch = useDispatch();
+
+    const selectedBank = () => {
+        return paymentMethods.find((el) => el.bankName === data.data?.payment_method)
+    }
 
     // const copyToClipboard = async (text) => {
     //     const str = text.toString();
@@ -67,7 +73,6 @@ export default function Step2() {
             const formData = new FormData();
             formData.append('slip', image);
             dispatch(putOrderSlip({
-                token: user.data.access_token,
                 id: data.id,
                 formData,
             }));
@@ -75,6 +80,7 @@ export default function Step2() {
     };
 
     useEffect(() => {
+        console.log(isModalVisible)
         if (status === 'upload-success') {
             console.log(data);
             dispatch(setStateByName({ name: 'activeStep', value: 2 }));
@@ -90,23 +96,15 @@ export default function Step2() {
                     <Text style={styles.countDownText}>
                         Selesaikan Pembayaran Sebelum
                     </Text>
-                    <CountDown
-                        until={86400}
-                        digitStyle={{ backgroundColor: '#FA2C5A' }}
-                        digitTxtStyle={{ color: '#fff' }}
-                        timeLabelStyle={{ display: 'none' }}
-                        onFinish={() => Alert('finished')}
-                        timeToShow={['H', 'M', 'S']}
-                        size={12}
-                    />
+                    <Countdown until={moment(data.data?.overdue_time)} />
                 </View>
-                <Text style={styles.countDownDate}>{getDate24()}</Text>
+                <Text style={styles.countDownDate}>{moment(data.data?.overdue_time).toLocaleString('id-ID')}</Text>
                 <CarList
-                    image={{ uri: data.image }}
-                    carName={data.name}
+                    image={{ uri: carData.data?.image }}
+                    carName={carData.data?.name}
                     passengers={5}
                     baggage={4}
-                    price={data.price}
+                    price={carData.data?.price}
                 />
                 <Text style={styles.textBold}>Lakukan Transfer Ke</Text>
                 <View
@@ -115,10 +113,10 @@ export default function Step2() {
                     }}
                 >
                     <View style={styles.paymentMethod}>
-                        <Text style={styles.paymentBox}>{selectedBank?.bankName}</Text>
+                        <Text style={styles.paymentBox}>{selectedBank().bankName}</Text>
                         <View style={styles.paymentText}>
-                            <Text>{selectedBank?.bankName} Transfer</Text>
-                            <Text>{selectedBank?.name}</Text>
+                            <Text>{selectedBank().bankName} Transfer</Text>
+                            <Text>{selectedBank().name}</Text>
                         </View>
                     </View>
                 </View>
@@ -132,10 +130,19 @@ export default function Step2() {
                     </View>
                 </View>
                 <View style={styles.readOnlyInputWrapper}>
+                    <Text>Kode Promo</Text>
+                    <View style={styles.readOnlyInput}>
+                        <Text style={styles.readOnlyInputText}>{data.data?.promo_code}</Text>
+                        <Pressable>
+                            <Icon color={'#3C3C3C'} name={'copy-outline'} size={14} />
+                        </Pressable>
+                    </View>
+                </View>
+                <View style={styles.readOnlyInputWrapper}>
                     <Text>Total Bayar</Text>
                     <View style={styles.readOnlyInput}>
                         <Text style={styles.readOnlyInputText}>
-                            {formatCurrency.format(data.price)}
+                            {formatCurrency.format(data.data?.total)}
                         </Text>
                         <Pressable>
                             <Icon color={'#3C3C3C'} name={'copy-outline'} size={14} />
@@ -144,53 +151,55 @@ export default function Step2() {
                 </View>
             </View>
 
-            <ModalPopup
-                isVisible={isModalVisible}
+            <ModalDragable
+                visible={isModalVisible}
                 onClose={() => {
                     dispatch(setStateByName({ name: 'isModalVisible', value: false }));
                 }}
             >
-                <Text style={styles.textBold}>Konfirmasi Pembayaran</Text>
-                <Text style={styles.textBold}>
-                    Terima kasih telah melakukan konfirmasi pembayaran. Pembayaranmu akan
-                    segera kami cek tunggu kurang lebih 10 menit untuk mendapatkan
-                    konfirmasi.
-                </Text>
-                <CountDown
-                    until={600}
-                    digitStyle={{ backgroundColor: '#FA2C5A' }}
-                    digitTxtStyle={{ color: '#fff' }}
-                    timeLabelStyle={{ display: 'none' }}
-                    onFinish={() => Alert('finished')}
-                    timeToShow={['M', 'S']}
-                    size={12}
-                />
-                <Text style={styles.textBold}>Pembayaran</Text>
-                <Text style={styles.textBold}>
-                    Untuk membantu kami lebih cepat melakukan pengecekan. Kamu bisa upload
-                    bukti bayarmu
-                </Text>
-                <Pressable style={styles.uploadImage} onPress={pickImage}>
-                    {image ? (
-                        <Image
-                            source={{ uri: image.uri }}
-                            resizeMode="cover"
-                            width={'100%'}
-                            height={300}
-                            style={styles.image}
-                        />
-                    ) : (
-                        <View style={styles.iconUpload}>
-                            <Icon color={'#3C3C3C'} name={'image-outline'} size={14} />
-                        </View>
-                    )}
-                </Pressable>
-                <Button
-                    title="Upload"
-                    color="#3D7B3F"
-                    onPress={handleUpload}
-                />
-            </ModalPopup>
+                <View style={styles.modalWrapper}>
+                    <Text style={styles.textBold}>Konfirmasi Pembayaran</Text>
+                    <Text style={styles.textBold}>
+                        Terima kasih telah melakukan konfirmasi pembayaran. Pembayaranmu akan
+                        segera kami cek tunggu kurang lebih 10 menit untuk mendapatkan
+                        konfirmasi.
+                    </Text>
+                    {/* <CountDown
+                        until={600}
+                        digitStyle={{ backgroundColor: '#FA2C5A' }}
+                        digitTxtStyle={{ color: '#fff' }}
+                        timeLabelStyle={{ display: 'none' }}
+                        onFinish={() => Alert('finished')}
+                        timeToShow={['M', 'S']}
+                        size={12}
+                    /> */}
+                    <Text style={styles.textBold}>Pembayaran</Text>
+                    <Text style={styles.textBold}>
+                        Untuk membantu kami lebih cepat melakukan pengecekan. Kamu bisa upload
+                        bukti bayarmu
+                    </Text>
+                    <Pressable style={styles.uploadImage}>
+                        {image ? (
+                            <Image
+                                source={{ uri: image.uri }}
+                                resizeMode="cover"
+                                width={'100%'}
+                                height={300}
+                                style={styles.image}
+                            />
+                        ) : (
+                            <View style={styles.iconUpload}>
+                                <Icon color={'#3C3C3C'} name={'image-outline'} size={14} />
+                            </View>
+                        )}
+                    </Pressable>
+                    <Button
+                        title="Upload"
+                        color="#3D7B3F"
+                        onPress={handleUpload}
+                    />
+                </View>
+            </ModalDragable>
         </View>
     );
 }
@@ -286,4 +295,7 @@ const styles = StyleSheet.create({
         fontFamily: 'PoppinsBold',
         fontSize: 16,
     },
+    modalWrapper:{
+        backgroundColor:'#fff',
+    }
 });

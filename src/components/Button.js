@@ -5,7 +5,8 @@ export default function Button({
     title, 
     children, 
     onPress, 
-    color, 
+    color,
+    textColor = "#ffffff",
     style
 }) {
   return (
@@ -17,7 +18,7 @@ export default function Button({
             ...style
         }}>
             { children ? children : 
-            <Text style={styles.buttonTitle}>{title}</Text> }
+            <Text style={{...styles.buttonTitle, color: textColor}}>{title}</Text> }
     </Pressable>
   )
 }
@@ -29,6 +30,5 @@ const styles = StyleSheet.create({
     },
     buttonTitle: {
         textAlign: 'center',
-        color: "#fff"
     }
 })

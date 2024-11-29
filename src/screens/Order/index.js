@@ -17,23 +17,15 @@ import moment from 'moment';
 
 export default function Order() {
   const carDetails = useSelector(selectCarDetail);
-  const { data, activeStep, selectedBank, status, errorMessage } = useSelector(selectOrder);
-  const user = useSelector(selectUser);
+  const { activeStep, selectedBank, status, errorMessage, formData } = useSelector(selectOrder);
   const dispatch = useDispatch();
-
   const handleOrder = () => {
-    const formData = {
-      carId: carDetails.data.id,
-      startRentAt: moment().format('YYYY-MM-DD'),
-      finishRentAt: moment().add(4, 'days').format('YYYY-MM-DD'),
-    };
-
-    dispatch(postOrder({token:user.data.access_token, formData}));
+    dispatch(postOrder(formData));
   };
 
   useEffect(() => {
     if(status === 'success'){
-      console.log(data);
+      console.log(status);
       dispatch(setStateByName({name: 'activeStep', value: 1}));
     }else{
       console.log(errorMessage);

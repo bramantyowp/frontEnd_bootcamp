@@ -9,27 +9,14 @@ import {
 
 import { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
-
 import Markdown from 'react-native-markdown-display';
 import Button from '../components/Button';
 import { Row, Col } from '../components/Grid';
 import { useNavigation } from '@react-navigation/native';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useDispatch, useSelector } from 'react-redux';
+import { resetState as resetOrderState } from '../redux/reducers/order';
 import { selectCarDetail, getCarsDetails, resetDetailsState } from '../redux/reducers/cars';
-
-const md = `## Include
-  
-  - Apa saja yang termasuk dalam paket misal durasi max 12 jam
-  - Sudah termasuk bensin selama 12 jam
-  - Sudah termasuk Tiket Wisata
-  - Sudah termasuk pajak
-  
-  ## Exclude
-  
-  - Tidak termasuk biaya makan sopir Rp 75.000/hari
-  - Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam
-  - Tidak termasuk akomodasi penginapan`.toString();
 
 export default function Detail({ route }) {
     const navigation = useNavigation();
@@ -37,11 +24,9 @@ export default function Detail({ route }) {
     const dispatch = useDispatch();
     const carDetail = useSelector(selectCarDetail);
 
-    const [isLoading, setIsLoading] = useState(true);
-
     useEffect(() => {
-        dispatch(resetDetailsState())
         if(id !== carDetail.id){
+            dispatch(resetDetailsState())
             dispatch(getCarsDetails(id));
         }
     }, [id]);
@@ -56,6 +41,13 @@ export default function Detail({ route }) {
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <View style={styles.heading}>
                     <Text style={styles.title}>{carDetail.data?.name}</Text>
+                    <Image
+                        style={styles.image}
+                        source={{ uri: carDetail.data?.img }}
+                        height={200}
+                        width={400}
+                        resizeMode ="contain"
+                    />
                     <Row style={styles.iconWrapper} gap={5}>
                         <Col style={styles.textIcon}>
                             <Icon size={14} name={'users'} color={'#8A8A8A'} />
@@ -66,12 +58,6 @@ export default function Detail({ route }) {
                             <Text style={styles.capacityText}>{carDetail.data?.baggage}</Text>
                         </Col>
                     </Row>
-                    <Image
-                        style={styles.image}
-                        source={{ uri: carDetail.data?.image }}
-                        height={200}
-                        width={200}
-                    />
                 </View>
                 <Markdown style={styles.details}>{carDetail.data?.description?.replace(/\\n/g,"\n")}</Markdown>
             </ScrollView>
@@ -80,7 +66,10 @@ export default function Detail({ route }) {
                 <Button
                     color="#3D7B3F"
                     title="Lanjutkan Pembayaran"
-                    onPress={navigation.navigate('Order', { carId: carDetail.data?.id })}
+                    onPress={() => {
+                        dispatch(resetOrderState())
+                        navigation.navigate('Order', { carId: carDetail.data?.id })
+                    }}
                 />
             </View>
         </View>

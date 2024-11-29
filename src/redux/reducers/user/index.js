@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { postLogin, getProfile } from './api';
+import { postLogin, getProfile, googleLogin } from './api';
 
 const initialState = {
     data: null, // variable untuk menyimpan data user
@@ -36,6 +36,22 @@ export const userSlice = createSlice({
             state.message = action.payload;
         });
 
+        builder.addCase(googleLogin.pending, (state, action) => {
+            state.status = 'loading';
+        });
+        builder.addCase(googleLogin.fulfilled, (state, action) => {// action = { type: '', payload: data, meta: {}}
+            state.status = 'success';
+            state.data = action.payload.data.user;
+            state.token = action.payload.data.token;
+            state.message = action.payload.message;
+            state.isLogin = true;
+        });
+        builder.addCase(googleLogin.rejected, (state, action) => {
+            state.status = 'failed';
+            console.log(action);
+            state.message = action.payload;
+        });
+
         //Get Profile Reducers
         builder.addCase(getProfile.pending, (state, action) => {
             state.status = 'loading';
@@ -55,5 +71,5 @@ export const userSlice = createSlice({
 
 export const selectUser = (state) => state.user; // selector untuk mengambil state user
 export const { resetState, setStateByName } = userSlice.actions; // action untuk logout
-export { postLogin, getProfile }; // action untuk panggil api postLogin dan get Profile
+export { postLogin, getProfile, googleLogin }; // action untuk panggil api postLogin dan get Profile
 export default userSlice.reducer; // user reducer untuk di tambahkan ke store

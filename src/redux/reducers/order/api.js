@@ -24,7 +24,7 @@ export const getOrder = createAsyncThunk(
 
 export const getOrderDetails = createAsyncThunk(
     'getOrderDetails',
-    async ({id, token} , { rejectWithValue }) => {
+    async (id , { rejectWithValue }) => {
         try {
             const res = await apiClient('/order/' + id)
             return res.data;
@@ -40,7 +40,7 @@ export const getOrderDetails = createAsyncThunk(
 
 export const postOrder = createAsyncThunk(
     'postOrder',
-    async ({data, token} , { rejectWithValue }) => {
+    async (data , { rejectWithValue }) => {
         try {
             const res = await apiClient.post('/order/', data)
             return res.data;
@@ -72,9 +72,9 @@ export const putOrder = createAsyncThunk(
 
 export const cancelOrder = createAsyncThunk(
     'cancelOrder',
-    async ({id, token} , { rejectWithValue }) => {
+    async (id , { rejectWithValue }) => {
         try {
-            const res = await apiClient('/order/' + id + '/cancel')
+            const res = await apiClient.put('/order/' + id + '/cancel')
             return res.data;
         } catch (e) {
             if(e.response.data){
@@ -87,7 +87,7 @@ export const cancelOrder = createAsyncThunk(
 );
 
 export const putOrderReceipt = createAsyncThunk(
-    'postOrder',
+    'putOrderReceipt',
     async ({id, token} , { rejectWithValue }) => {
         try {
             const res = await apiClient.put('/order/' + id + '/receipt')

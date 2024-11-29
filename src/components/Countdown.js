@@ -1,35 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import moment from 'moment'; 'moment';
 
-const Countdown = ({ until, onFinish, size = 20, digitStyle, digitTxtStyle, timeLabelStyle, timeToShow = ['H', 'M', 'S']}) => {
-    const currentDate = new moment()
-    const untilDate = new moment(until)
-    const diff = untilDate.diff(currentDate)
-    const [timeLeft, setTimeLeft] = useState(moment.duration(diff <= 0 ? 0 : diff));
+const Countdown = memo(({ until, onFinish, size = 20, digitStyle, digitTxtStyle, timeLabelStyle, timeToShow = ['H', 'M', 'S']}) => {
+    const getTimeLeft = useCallback(() => {
+        const currentDate = new moment();
+        const untilDate = new moment(until);
+        const diff = untilDate.diff(currentDate);
+
+        return moment.duration(diff <= 0 ? 0 : diff);
+    }, [until]);
+
+    const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+
     useEffect(() => {
         const intervalId = setInterval(() => {
             setTimeLeft((prev) => {
-                console.log(prev)
                 if(prev.milliseconds() <= 0){
-                    clearInterval(intervalId)
-                    onFinish && onFinish()
-                    return moment.duration(0)
+                    clearInterval(intervalId);
+                    onFinish && onFinish();
+                    return getTimeLeft();
                 }
-                return moment.duration(diff)
+                return getTimeLeft();
             });
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [diff, onFinish]);
+    }, [getTimeLeft, onFinish]);
 
-    const formatTime = (time, unit) => {
+    const formatTime = (time) => {
         return String(time).padStart(2, '0');
     };
 
-    const hours = timeLeft.days() * 24 + timeLeft.hours()
-    const minutes = timeLeft.minutes()
-    const seconds =  timeLeft.seconds()
+    const hours = timeLeft.days() * 24 + timeLeft.hours();
+    const minutes = timeLeft.minutes();
+    const seconds =  timeLeft.seconds();
 
     // const hours = Math.floor(timeLeft / 3600);
     // const minutes = Math.floor((timeLeft % 3600) / 60 );
@@ -66,7 +71,7 @@ const Countdown = ({ until, onFinish, size = 20, digitStyle, digitTxtStyle, time
             {displayTime}
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -83,12 +88,12 @@ const styles = StyleSheet.create({
         borderRadius: 3,
     },
     timeWrapper:{
-        flexDirection: "row",
+        flexDirection: 'row',
     },
     separator:{
         fontWeight: '700',
         marginHorizontal: 2,
-    }
+    },
 });
 
 export default Countdown;

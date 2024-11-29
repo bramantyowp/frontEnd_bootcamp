@@ -1,41 +1,43 @@
 import { View, StyleSheet } from 'react-native'
 import React from 'react'
 
-export function Container({style, children}) {
+export function Container({ style, children }) {
   return (
-    <View style={{...styles.container, style}}>
+    <View style={{ ...styles.container, style }}>
       {children}
     </View>
   )
 }
 
-export function Row({alignItems, justifyContent, gap = 0, style, children}) {
-    return (
-      <View style={{
-        ...styles.row,
-        alignItems: alignItems ? alignItems : 'baseline',
-        justifyContent: justifyContent ? justifyContent : 'flex-start',
-        gap: gap,
-        ...style
-      }}>
-        {children}
-      </View>
-    )
+export function Row({ alignItems, justifyContent, gap = 0, style, children }) {
+  return (
+    <View style={{
+      ...styles.row,
+      alignItems: alignItems ? alignItems : 'baseline',
+      justifyContent: justifyContent ? justifyContent : 'flex-start',
+      gap: gap,
+      ...style,
+    }}>
+      {children}
+    </View>
+  )
 }
 
-export function Col({style, children}) {
-    return (
-      <View style={style}>
-        {children}
-      </View>
-    )
+export function Col({ style, children }) {
+  return (
+    <View style={style}>
+      {children}
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
-    container:{
-        paddingHorizontal: 20,
-    },
-    row:{
-        flexDirection:'row',
-    }
+  container: {
+    paddingHorizontal: 20,
+  },
+  row: {
+    flex: 1,
+    width: '100%',
+    flexDirection: 'row',
+  }
 })

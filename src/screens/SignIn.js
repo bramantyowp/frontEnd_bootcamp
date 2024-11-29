@@ -88,6 +88,13 @@ export default function SignIn() {
               color={'#5CB85F'}
             />
           </View>
+          <View style={{flexDirection: 'row', alignItems: 'center', marginVertical: 10}}>
+            <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
+            <View>
+              <Text style={{width: 50, textAlign: 'center'}}>OR</Text>
+            </View>
+            <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
+          </View>
           <GoogleButton />
           <View>
             <Text style={styles.authFooterText}>Don’t have an account? <Link screen="SignUp">Sign Up for free</Link></Text>

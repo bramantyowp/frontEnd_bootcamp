@@ -19,6 +19,24 @@ export const postLogin = createAsyncThunk(
     }
 );
 
+export const googleLogin = createAsyncThunk(
+    'user/googleLogin',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const res = await apiClient.post('/auth/googleSignIn', payload);
+            const data = res.data;
+            return data;
+        } catch (e) {
+            console.log(e)
+            if (e.response.data) {
+                return rejectWithValue(e.response.data.message);
+            } else {
+                return rejectWithValue('Something went wrong');
+            }
+        }
+    }
+);
+
 export const getProfile = createAsyncThunk(
     'user/getProfile',
     async (token, { rejectWithValue }) => {

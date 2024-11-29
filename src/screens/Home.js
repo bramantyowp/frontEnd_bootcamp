@@ -46,7 +46,7 @@ function Home() {
 
   const fetchCars = async () => {
     const page = 1;
-    if(!cars.data.length || page > cars.data?.page && cars.status === 'idle'){
+    if(page > cars.data?.page && cars.status === 'idle'){
       dispatch(getCars(page))
     }
   }
@@ -81,7 +81,7 @@ function Home() {
                   <GeoLoc />
                 </View>
                 <View >
-                  <Image style={styles.imageRounded} source={{ uri: "https://i.pravatar.cc/100" }} width={50} height={50} />
+                  <Image style={styles.imageRounded} source={{ uri: user.data ? user.data?.avatar : "https://i.pravatar.cc/100" }} width={50} height={50} />
                 </View>
               </View>
               {/* banner */}
@@ -114,8 +114,8 @@ function Home() {
             key={item.id}
             image={{ uri: item.img }}
             carName={item.name}
-            passengers={5}
-            baggage={4}
+            passengers={item.seat}
+            baggage={item.baggage}
             price={item.price}
             onEndReached={fetchCars}
             onEndReachedThreshold={0.8}
